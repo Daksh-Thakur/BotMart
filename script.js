@@ -73,24 +73,77 @@ const modalProduct = document.getElementById('modal-product');
 const modalSeller = document.getElementById('modal-seller');
 const sellerForm = document.getElementById('seller-form');
 
+const profileModal = document.getElementById('profile-modal');
+const profileButton = document.getElementById('profile-button');
+const profilePreview = document.getElementById('profile-preview');
+const userProfileForm = document.getElementById('profile-form');
+const profileCancelButton = document.getElementById('profile-cancel-button');
+const profileSummary = document.getElementById('profile-summary');
+const editProfileButton = document.getElementById('edit-profile-button');
+const logoutButton = document.getElementById('logout-button');
+const profileAvatar = document.getElementById('profile-avatar');
+const profileDisplayName = document.getElementById('profile-display-name');
+const profileDisplayRole = document.getElementById('profile-display-role');
+const profileDisplayEmail = document.getElementById('profile-display-email');
+const profileDisplayCompany = document.getElementById('profile-display-company');
+const profileDisplayBio = document.getElementById('profile-display-bio');
+const profileNameInput = document.getElementById('profile-name');
+const profileEmailInput = document.getElementById('profile-email');
+const profileCompanyInput = document.getElementById('profile-company');
+const profileRoleInput = document.getElementById('profile-role');
+const profileBioInput = document.getElementById('profile-bio');
+const profileModalClose = document.getElementById('profile-modal-close');
+
 let activeCategory = 'all';
 let searchQuery = '';
+let lastSearchQuery = '';
 let currentSuggestionList = null;
+let suggestionOptions = [];
+let activeSuggestionIndex = -1;
+let userProfile = null;
 
 const sellers = [
   {
     name: 'Bharat Robotics',
     description: 'Established in Pune, Bharat Robotics builds automation systems and robotic arms for factories across India.',
+    logo: 'BR',
   },
   {
     name: 'Akash Automations',
     description: 'Akash Automations delivers AI-enabled robotics solutions and vision systems for smart manufacturing.',
+    logo: 'AA',
   },
   {
     name: 'Sakhi Systems',
     description: 'Sakhi Systems offers drones, agricultural robotics, and tailored build services for Indian enterprises.',
+    logo: 'SS',
   },
 ];
+
+function getSellerInfo(sellerName) {
+  const seller = sellers.find((item) => item.name === sellerName);
+  if (seller) return seller;
+  return {
+    name: sellerName,
+    description: 'Seller profile details are not available.',
+    logo: sellerName
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase(),
+  };
+}
+
+function getSellerLabelHTML(sellerName) {
+  const { logo } = getSellerInfo(sellerName);
+  return `
+    <span class="seller-badge">
+      <span class="seller-badge-logo">${logo}</span>
+      <span>${sellerName}</span>
+    </span>
+  `;
+}
 
 function getSuggestionOptions() {
   const options = new Set();
@@ -103,9 +156,41 @@ function getSuggestionOptions() {
   return Array.from(options);
 }
 
+function scrollToMarketplace() {
+  const marketSection = document.getElementById('market');
+  if (marketSection) {
+    marketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function getProductRelevance(product, query) {
+  if (!query) return 0;
+
+  const title = product.title.toLowerCase();
+  const seller = product.seller.toLowerCase();
+  const category = product.category.toLowerCase();
+  const highlights = product.highlights.toLowerCase();
+  const tags = product.tags.map((tag) => tag.toLowerCase());
+  let score = 0;
+
+  if (title.startsWith(query)) score += 40;
+  else if (title.includes(query)) score += 25;
+
+  if (seller.includes(query)) score += 18;
+  if (category.includes(query)) score += 12;
+  if (highlights.includes(query)) score += 8;
+  tags.forEach((tag) => {
+    if (tag.includes(query)) score += 10;
+  });
+
+  return score;
+}
+
 function renderSuggestions(query, suggestionContainer) {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) {
+    suggestionOptions = [];
+    activeSuggestionIndex = -1;
     suggestionContainer.classList.remove('active');
     suggestionContainer.innerHTML = '';
     return;
@@ -113,28 +198,60 @@ function renderSuggestions(query, suggestionContainer) {
 
   const suggestions = getSuggestionOptions().filter((option) => option.toLowerCase().includes(normalizedQuery));
   if (!suggestions.length) {
+    suggestionOptions = [];
+    activeSuggestionIndex = -1;
     suggestionContainer.classList.remove('active');
     suggestionContainer.innerHTML = '';
     return;
   }
 
-  suggestionContainer.innerHTML = suggestions
-    .slice(0, 6)
+  suggestionOptions = suggestions.slice(0, 6);
+  activeSuggestionIndex = -1;
+  suggestionContainer.innerHTML = suggestionOptions
     .map((option) => `<div class="search-suggestion" role="button" tabindex="0">${option}</div>`)
     .join('');
   suggestionContainer.classList.add('active');
 }
 
+function updateSuggestionHighlight(suggestionContainer) {
+  const children = Array.from(suggestionContainer.children);
+  children.forEach((child, index) => {
+    child.classList.toggle('highlighted', index === activeSuggestionIndex);
+  });
+}
+
+function selectSuggestion(index, suggestionContainer) {
+  if (index < 0 || index >= suggestionOptions.length) return;
+  const selected = suggestionOptions[index];
+  searchQuery = selected;
+  searchInputs.forEach((control) => {
+    control.value = selected;
+  });
+  renderProducts();
+  suggestionContainer.classList.remove('active');
+  suggestionOptions = [];
+  activeSuggestionIndex = -1;
+}
+
 function renderProducts() {
   productGrid.innerHTML = '';
   const normalizedQuery = searchQuery.trim().toLowerCase();
-  const visibleProducts = products.filter((product) => {
-    const categoryMatch = activeCategory === 'all' || product.category === activeCategory;
-    const queryMatch =
-      !normalizedQuery ||
-      [product.title, product.seller, product.highlights, ...product.tags].join(' ').toLowerCase().includes(normalizedQuery);
-    return categoryMatch && queryMatch;
-  });
+  const queryTerms = normalizedQuery ? normalizedQuery.split(/\s+/) : [];
+  const visibleProducts = products
+    .map((product) => {
+      const categoryMatch = activeCategory === 'all' || product.category === activeCategory;
+      const queryString = [product.title, product.seller, product.highlights, ...product.tags, product.category]
+        .join(' ')
+        .toLowerCase();
+      const queryMatch =
+        !normalizedQuery ||
+        queryTerms.some((term) => queryString.includes(term));
+      const score = queryMatch ? getProductRelevance(product, normalizedQuery) : 0;
+      return { product, categoryMatch, queryMatch, score };
+    })
+    .filter((item) => item.categoryMatch && item.queryMatch)
+    .sort((a, b) => b.score - a.score || a.product.id - b.product.id)
+    .map((item) => item.product);
 
   if (!visibleProducts.length) {
     productGrid.innerHTML = '<p class="empty-state">No listings match that category yet.</p>';
@@ -146,7 +263,7 @@ function renderProducts() {
     card.className = 'product-card';
     card.innerHTML = `
       <div class="meta">
-        <span>${product.seller}</span>
+        ${getSellerLabelHTML(product.seller)}
         <span class="price">${product.price}</span>
       </div>
       <h3>${product.title}</h3>
@@ -159,9 +276,10 @@ function renderProducts() {
 }
 
 function renderSellerProfile(sellerName) {
-  const seller = sellers.find((item) => item.name === sellerName) || { name: sellerName, description: 'Seller profile details are not available.' };
+  const seller = getSellerInfo(sellerName);
   profileTitle.textContent = seller.name;
   profileDescription.textContent = seller.description;
+  document.getElementById('profile-seller-logo').textContent = seller.logo;
 
   const sellerProducts = products.filter((product) => product.seller === sellerName);
   profileProductGrid.innerHTML = '';
@@ -174,7 +292,7 @@ function renderSellerProfile(sellerName) {
       card.className = 'product-card';
       card.innerHTML = `
         <div class="meta">
-          <span>${product.seller}</span>
+          ${getSellerLabelHTML(product.seller)}
           <span class="price">${product.price}</span>
         </div>
         <h3>${product.title}</h3>
@@ -231,8 +349,24 @@ closeProfile.addEventListener('click', () => {
 categoryButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const category = button.dataset.category;
+    const searchTerm = button.dataset.search;
+
     setActiveCategory(button);
-    activeCategory = category;
+
+    if (category) {
+      activeCategory = category;
+      searchQuery = '';
+      searchInputs.forEach((control) => {
+        control.value = '';
+      });
+    } else if (searchTerm) {
+      activeCategory = 'all';
+      searchQuery = searchTerm;
+      searchInputs.forEach((control) => {
+        control.value = searchQuery;
+      });
+    }
+
     renderProducts();
   });
 });
@@ -241,25 +375,61 @@ searchInputs.forEach((input) => {
   const suggestionContainer = input.parentElement.querySelector('.search-suggestions');
 
   input.addEventListener('input', (event) => {
-    searchQuery = event.target.value;
+    const value = event.target.value;
+    searchQuery = value;
     searchInputs.forEach((control) => {
       if (control !== event.target) {
-        control.value = searchQuery;
+        control.value = value;
       }
     });
     renderProducts();
-    renderSuggestions(searchQuery, suggestionContainer);
+    renderSuggestions(value, suggestionContainer);
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (!suggestionOptions.length) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        scrollToMarketplace();
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, suggestionOptions.length - 1);
+      updateSuggestionHighlight(suggestionContainer);
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
+      updateSuggestionHighlight(suggestionContainer);
+      return;
+    }
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (activeSuggestionIndex >= 0) {
+        selectSuggestion(activeSuggestionIndex, suggestionContainer);
+      }
+      scrollToMarketplace();
+    }
   });
 
   input.addEventListener('focus', (event) => {
-    searchQuery = event.target.value;
+    const value = event.target.value;
+    searchQuery = value;
     currentSuggestionList = suggestionContainer;
-    renderSuggestions(searchQuery, suggestionContainer);
+    renderSuggestions(value, suggestionContainer);
   });
 
   input.addEventListener('blur', () => {
     setTimeout(() => {
       suggestionContainer.classList.remove('active');
+      activeSuggestionIndex = -1;
+      suggestionOptions = [];
     }, 150);
   });
 });
@@ -274,9 +444,139 @@ suggestionLists.forEach((container) => {
       control.value = searchQuery;
     });
     renderProducts();
+    scrollToMarketplace();
     container.classList.remove('active');
   });
 });
+
+function saveUserProfile(profile) {
+  userProfile = profile;
+  localStorage.setItem('botmartUserProfile', JSON.stringify(profile));
+  updateProfileDisplay();
+}
+
+function loadUserProfile() {
+  const saved = localStorage.getItem('botmartUserProfile');
+  if (!saved) return null;
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return null;
+  }
+}
+
+function updateProfileDisplay() {
+  const headerAvatar = document.getElementById('profile-header-avatar');
+  const headerName = document.getElementById('profile-header-name');
+  const profilePreview = document.getElementById('profile-preview');
+
+  if (!userProfile) {
+    profileSummary.classList.add('hidden');
+    userProfileForm.classList.remove('hidden');
+    profileButton.textContent = 'Login / Profile';
+    if (profilePreview) profilePreview.classList.add('hidden');
+    return;
+  }
+
+  profileSummary.classList.remove('hidden');
+  userProfileForm.classList.add('hidden');
+  const initials = userProfile.name ? userProfile.name.charAt(0).toUpperCase() : 'U';
+  profileAvatar.textContent = initials;
+  profileDisplayName.textContent = userProfile.name || 'User Name';
+  profileDisplayRole.textContent = userProfile.role || 'Buyer';
+  profileDisplayEmail.textContent = userProfile.email;
+  profileDisplayCompany.textContent = userProfile.company || 'N/A';
+  profileDisplayBio.textContent = userProfile.bio || 'No profile description added yet.';
+  profileButton.textContent = userProfile.name ? `Hi, ${userProfile.name.split(' ')[0]}` : 'Profile';
+
+  if (profilePreview) {
+    profilePreview.classList.remove('hidden');
+  }
+  if (headerAvatar) {
+    headerAvatar.textContent = initials;
+  }
+  if (headerName) {
+    headerName.textContent = `Hi, ${userProfile.name.split(' ')[0]}`;
+  }
+}
+
+function openProfileModal() {
+  profileModal.classList.remove('hidden');
+  updateProfileDisplay();
+}
+
+function closeProfileModal() {
+  profileModal.classList.add('hidden');
+}
+
+profileButton.addEventListener('click', () => {
+  if (profileModal.classList.contains('hidden')) {
+    openProfileModal();
+  } else {
+    closeProfileModal();
+  }
+});
+
+if (profilePreview) {
+  profilePreview.addEventListener('click', () => {
+    openProfileModal();
+  });
+}
+
+if (profileModalClose) {
+  profileModalClose.addEventListener('click', closeProfileModal);
+}
+
+profileModal.addEventListener('click', (event) => {
+  if (event.target === profileModal) {
+    closeProfileModal();
+  }
+});
+
+userProfileForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const profile = {
+    name: profileNameInput.value.trim(),
+    email: profileEmailInput.value.trim(),
+    company: profileCompanyInput.value.trim(),
+    role: profileRoleInput.value.trim(),
+    bio: profileBioInput.value.trim(),
+  };
+  saveUserProfile(profile);
+});
+
+profileCancelButton.addEventListener('click', () => {
+  closeProfileModal();
+});
+
+editProfileButton.addEventListener('click', () => {
+  userProfileForm.classList.remove('hidden');
+  profileSummary.classList.add('hidden');
+  if (userProfile) {
+    profileNameInput.value = userProfile.name || '';
+    profileEmailInput.value = userProfile.email || '';
+    profileCompanyInput.value = userProfile.company || '';
+    profileRoleInput.value = userProfile.role || '';
+    profileBioInput.value = userProfile.bio || '';
+  }
+});
+
+logoutButton.addEventListener('click', () => {
+  localStorage.removeItem('botmartUserProfile');
+  userProfile = null;
+  profileNameInput.value = '';
+  profileEmailInput.value = '';
+  profileCompanyInput.value = '';
+  profileRoleInput.value = '';
+  profileBioInput.value = '';
+  updateProfileDisplay();
+  profileButton.textContent = 'Login / Profile';
+});
+
+userProfile = loadUserProfile();
+if (userProfile) {
+  updateProfileDisplay();
+}
 
 modalClose.addEventListener('click', closeModal);
 modal.addEventListener('click', (event) => {

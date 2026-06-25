@@ -6,7 +6,7 @@
   <title>BotMart | Indian Robotics Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <script defer src="script.js"></script>
 </head>
@@ -27,19 +27,13 @@
         <a href="#categories">Categories</a>
         <a href="#sellers">Sellers</a>
         <a href="#contact">Contact</a>
+        <button id="profile-button" class="btn btn-secondary" type="button">Login / Profile</button>
       </nav>
     </header>
 
     <main>
       <section class="hero" id="hero">
         <div class="hero-copy">
-          <div class="hero-title-image">
-            <img src="logo2.png" alt="BotMart" />
-          </div>
-          <div class="hero-search">
-            <input id="search-input-top" class="market-search-input" type="search" placeholder="Search products, sellers, or services" aria-label="Search marketplace" autocomplete="off" />
-            <div class="search-suggestions" id="suggestions-top"></div>
-          </div>
           <p>Buy automation hardware, custom robotics services, and consult with sellers across India. Request local modifications, connect directly, and build smarter automation solutions.</p>
           <div class="hero-actions">
             <a href="#market" class="btn btn-primary">Explore listings</a>
@@ -62,6 +56,63 @@
         </div>
       </section>
 
+      <div id="profile-modal" class="modal hidden">
+        <div class="modal-panel">
+          <button class="modal-close" id="profile-modal-close" aria-label="Close profile popup">×</button>
+          <div class="modal-header">
+            <h2>Login / Signup</h2>
+            <p id="profile-modal-subtitle">Create or update your BotMart buyer profile.</p>
+          </div>
+          <div class="profile-grid">
+            <form id="profile-form" class="profile-form">
+              <label>
+                Full name
+                <input type="text" id="profile-name" placeholder="Your full name" required />
+              </label>
+              <label>
+                Email address
+                <input type="email" id="profile-email" placeholder="you@example.com" required />
+              </label>
+              <label>
+                Company or organization
+                <input type="text" id="profile-company" placeholder="Company name" />
+              </label>
+              <label>
+                Role
+                <input type="text" id="profile-role" placeholder="Buyer, founder, engineer" />
+              </label>
+              <label>
+                About you
+                <textarea id="profile-bio" placeholder="Tell sellers what kind of robotics work you are looking for" rows="4"></textarea>
+              </label>
+              <div class="profile-actions-row">
+                <button type="submit" class="btn btn-primary">Save profile</button>
+                <button type="button" class="btn btn-secondary" id="profile-cancel-button">Close</button>
+              </div>
+            </form>
+
+            <div class="profile-summary hidden" id="profile-summary">
+              <div class="profile-card">
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div>
+                  <h3 id="profile-display-name">User Name</h3>
+                  <p id="profile-display-role">Role</p>
+                </div>
+              </div>
+              <div class="profile-details">
+                <p><strong>Email:</strong> <span id="profile-display-email"></span></p>
+                <p><strong>Company:</strong> <span id="profile-display-company"></span></p>
+                <p><strong>About:</strong> <span id="profile-display-bio"></span></p>
+              </div>
+              <div class="profile-actions-row">
+                <button type="button" class="btn btn-secondary" id="edit-profile-button">Edit profile</button>
+                <button type="button" class="btn btn-primary" id="logout-button">Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <section class="market-overview" id="market">
         <div class="section-header">
           <span class="eyebrow">Marketplace</span>
@@ -76,10 +127,11 @@
 
         <div class="category-filters" id="categories">
           <button class="pill active" data-category="all">All</button>
-          <button class="pill" data-category="hardware">Hardware</button>
-          <button class="pill" data-category="services">Services</button>
-          <button class="pill" data-category="ai">AI Integration</button>
-          <button class="pill" data-category="custom">Custom Builds</button>
+          <button class="pill" data-search="warehouse">Warehouse automation</button>
+          <button class="pill" data-search="ai">AI &amp; vision</button>
+          <button class="pill" data-search="drone">Drone inspection</button>
+          <button class="pill" data-search="custom">Custom robotics</button>
+          <button class="pill" data-search="prototype">Prototype services</button>
         </div>
 
         <div class="product-grid" id="product-grid"></div>
@@ -93,17 +145,26 @@
 
         <div class="seller-grid" id="seller-grid">
           <article class="seller-card" data-seller-profile="Bharat Robotics">
-            <h3>Bharat Robotics</h3>
+            <div class="seller-card-heading">
+              <div class="seller-logo">BR</div>
+              <h3>Bharat Robotics</h3>
+            </div>
             <p>Custom automation, robotic arms, and embedded control systems for Indian manufacturing units.</p>
             <span class="seller-tag">15 active listings</span>
           </article>
           <article class="seller-card" data-seller-profile="Akash Automations">
-            <h3>Akash Automations</h3>
+            <div class="seller-card-heading">
+              <div class="seller-logo">AA</div>
+              <h3>Akash Automations</h3>
+            </div>
             <p>AI-enabled robotics services, machine vision integration, and prototyping support for smart factories.</p>
             <span class="seller-tag">9 active listings</span>
           </article>
           <article class="seller-card" data-seller-profile="Sakhi Systems">
-            <h3>Sakhi Systems</h3>
+            <div class="seller-card-heading">
+              <div class="seller-logo">SS</div>
+              <h3>Sakhi Systems</h3>
+            </div>
             <p>Inspection drones, agricultural robotics, and tailor-made custom-build services.</p>
             <span class="seller-tag">12 active listings</span>
           </article>
@@ -113,8 +174,13 @@
       <section class="seller-profile hidden" id="seller-profile">
         <div class="section-header wide">
           <span class="eyebrow">Seller profile</span>
-          <h2 id="profile-title">Seller name</h2>
-          <p id="profile-description">View all products and services offered by this seller.</p>
+          <div class="seller-profile-heading">
+            <div class="seller-logo-large" id="profile-seller-logo">BR</div>
+            <div>
+              <h2 id="profile-title">Seller name</h2>
+              <p id="profile-description">View all products and services offered by this seller.</p>
+            </div>
+          </div>
         </div>
         <div class="seller-profile-actions">
           <button class="btn btn-secondary" id="close-profile" type="button">Back to sellers</button>
