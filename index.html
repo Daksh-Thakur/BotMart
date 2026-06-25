@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BotMart | Indian Robotics Marketplace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="logo2.png" alt="BotMart logo" />
+        </div>
+        <div>
+          <span class="logo">BotMart</span>
+          <span class="tag">India's marketplace for robotics products and services</span>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="#featured">Featured</a>
+        <a href="#categories">Categories</a>
+        <a href="#sellers">Sellers</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-copy">
+          <div class="hero-title-image">
+            <img src="logo2.png" alt="BotMart" />
+          </div>
+          <div class="hero-search">
+            <input id="search-input-top" class="market-search-input" type="search" placeholder="Search products, sellers, or services" aria-label="Search marketplace" autocomplete="off" />
+            <div class="search-suggestions" id="suggestions-top"></div>
+          </div>
+          <p>Buy automation hardware, custom robotics services, and consult with sellers across India. Request local modifications, connect directly, and build smarter automation solutions.</p>
+          <div class="hero-actions">
+            <a href="#market" class="btn btn-primary">Explore listings</a>
+            <a href="#contact" class="btn btn-secondary">Become a seller</a>
+          </div>
+        </div>
+        <div class="hero-pillars">
+          <article>
+            <strong>Fast quotes</strong>
+            <p>Connect with sellers instantly and get modification requests answered within hours.</p>
+          </article>
+          <article>
+            <strong>Verified profiles</strong>
+            <p>Browse trusted robotics experts with product history and service offerings.</p>
+          </article>
+          <article>
+            <strong>Flexible sourcing</strong>
+            <p>Buy hardware or book custom build services through one sleek marketplace.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="market-overview" id="market">
+        <div class="section-header">
+          <span class="eyebrow">Marketplace</span>
+          <h2>Shop Indian robotics products and services</h2>
+          <p>Filter by category, compare regional sellers, and request product customizations directly in every listing.</p>
+        </div>
+
+        <div class="market-search">
+          <input id="search-input" class="market-search-input" type="search" placeholder="Search products, sellers, or services" aria-label="Search marketplace" autocomplete="off" />
+          <div class="search-suggestions" id="suggestions-market"></div>
+        </div>
+
+        <div class="category-filters" id="categories">
+          <button class="pill active" data-category="all">All</button>
+          <button class="pill" data-category="hardware">Hardware</button>
+          <button class="pill" data-category="services">Services</button>
+          <button class="pill" data-category="ai">AI Integration</button>
+          <button class="pill" data-category="custom">Custom Builds</button>
+        </div>
+
+        <div class="product-grid" id="product-grid"></div>
+      </section>
+
+      <section class="feature-sellers" id="sellers">
+        <div class="section-header wide">
+          <span class="eyebrow">Trusted sellers</span>
+          <h2>Top robotics providers ready to collaborate</h2>
+        </div>
+
+        <div class="seller-grid" id="seller-grid">
+          <article class="seller-card" data-seller-profile="Bharat Robotics">
+            <h3>Bharat Robotics</h3>
+            <p>Custom automation, robotic arms, and embedded control systems for Indian manufacturing units.</p>
+            <span class="seller-tag">15 active listings</span>
+          </article>
+          <article class="seller-card" data-seller-profile="Akash Automations">
+            <h3>Akash Automations</h3>
+            <p>AI-enabled robotics services, machine vision integration, and prototyping support for smart factories.</p>
+            <span class="seller-tag">9 active listings</span>
+          </article>
+          <article class="seller-card" data-seller-profile="Sakhi Systems">
+            <h3>Sakhi Systems</h3>
+            <p>Inspection drones, agricultural robotics, and tailor-made custom-build services.</p>
+            <span class="seller-tag">12 active listings</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="seller-profile hidden" id="seller-profile">
+        <div class="section-header wide">
+          <span class="eyebrow">Seller profile</span>
+          <h2 id="profile-title">Seller name</h2>
+          <p id="profile-description">View all products and services offered by this seller.</p>
+        </div>
+        <div class="seller-profile-actions">
+          <button class="btn btn-secondary" id="close-profile" type="button">Back to sellers</button>
+        </div>
+        <div class="product-grid" id="profile-product-grid"></div>
+      </section>
+
+      <section class="workflow" id="workflow">
+        <div class="section-header wide">
+          <span class="eyebrow">How it works</span>
+          <h2>From browsing to custom request in three steps</h2>
+        </div>
+        <div class="workflow-grid">
+          <div>
+            <strong>1. Discover</strong>
+            <p>Browse curated robotics products, services, and system integrators by category.</p>
+          </div>
+          <div>
+            <strong>2. Contact</strong>
+            <p>Open a listing, tell the seller your modification needs, and request a custom quote.</p>
+          </div>
+          <div>
+            <strong>3. Buy or book</strong>
+            <p>Confirm an order or schedule a service with a seller and track your message status.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-panel" id="contact">
+        <div class="section-header wide">
+          <span class="eyebrow">Sell with us</span>
+          <h2>Start offering robotics products and services across India</h2>
+          <p>Join BotMart to list your kit, promote service packages, and receive buyer requests from Indian companies and startups.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-copy">
+            <p>Provide details about your robotics offering, support custom local work, and make your brand visible to buyers seeking automation in manufacturing, agriculture, and education.</p>
+          </div>
+          <form id="seller-form" class="seller-form">
+            <label>
+              Name
+              <input type="text" id="seller-name" placeholder="Your name or company" required />
+            </label>
+            <label>
+              Email
+              <input type="email" id="seller-email" placeholder="you@example.com" required />
+            </label>
+            <label>
+              What you offer
+              <textarea id="seller-offer" placeholder="Robotics products, services, or custom work" rows="4" required></textarea>
+            </label>
+            <button type="submit" class="btn btn-primary">Submit seller info</button>
+            <p class="form-note">Your listing will appear live to buyers once you connect with a sales manager.</p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© 2026 BotMart. Built for India's robotics community.</p>
+    </footer>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-panel">
+      <button class="modal-close" id="modal-close" aria-label="Close contact form">×</button>
+      <div class="modal-header">
+        <h2>Contact seller</h2>
+        <p id="modal-subtitle">Send a custom request to the seller.</p>
+      </div>
+      <form id="contact-form" class="modal-form">
+        <input type="hidden" id="modal-product" />
+        <input type="hidden" id="modal-seller" />
+        <label>
+          Your name
+          <input type="text" id="buyer-name" placeholder="Buyer name" required />
+        </label>
+        <label>
+          Your email
+          <input type="email" id="buyer-email" placeholder="you@example.com" required />
+        </label>
+        <label>
+          Message
+          <textarea id="buyer-message" placeholder="Tell the seller what modifications or support you need." rows="5" required></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Send message</button>
+        <p class="form-note" id="modal-note">This is a demo flow to contact sellers for quotes and customization.</p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
